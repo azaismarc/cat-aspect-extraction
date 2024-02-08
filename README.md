@@ -19,9 +19,7 @@ or
 
 ```bash
 git clone
-pip install -f requirements.txt
-python -m build
-pip install dist/cat_aspect_extraction-{version}.tar.gz
+python -m pip install .
 ```
 
 ## Example
