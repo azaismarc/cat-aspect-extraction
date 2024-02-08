@@ -33,5 +33,5 @@ classifiers = [
 
 [project.urls]
 Repository = "https://github.com/azaismarc/cat-aspect-extraction.git"
-"Original Repository" = "https://github.com/clips/cat/"
+"Repository (original)" = "https://github.com/clips/cat/"
 Paper = "https://aclanthology.org/2020.acl-main.290/"
