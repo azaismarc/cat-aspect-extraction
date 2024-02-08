@@ -7,7 +7,7 @@ Easy to use library for implement Contrastive Attention Topic Modeling describe 
 - PAPER : https://aclanthology.org/2020.acl-main.290/
 - REPOSITORY : https://github.com/clips/cat/
 
-![cat walking on a computer keyboard](cat.gif)
+![cat walking on a computer keyboard](https://raw.githubusercontent.com/azaismarc/cat-aspect-extraction/master/cat.gif)
 
 ## Installation
 
