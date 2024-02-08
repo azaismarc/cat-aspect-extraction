@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cat-aspect-extraction"
-version = "1.0.2"
+version = "1.0.2.1"
 authors = [
     {name = "Marc-Alexis Azaïs", email = "azaismarc.pro@gmail.com"}
 ]
 description = "Aspect extraction based on word embeddings"
 readme = "README.md"
-keywords = ["nlp", "absa", "topic modeling", "CAt"]
+keywords = ["cat", "nlp", "absa", "topic modeling", "sentiment analysis", "aspect extraction"]
 dependencies = [
     "reach",
     "numpy",
