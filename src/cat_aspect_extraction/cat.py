@@ -74,6 +74,7 @@ class CAt():
         assert len(self.topics) > 0, "No labels have been added"
 
         score = Counter({topic: 0 for topic in self.topics})
+        if len(tokens) == 0: return score.most_common()
         tokens_matrix = self.r.vectorize(tokens, remove_oov=remove_oov)
         if len(tokens_matrix) == 0: return score.most_common()
 
