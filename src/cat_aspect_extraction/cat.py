@@ -38,7 +38,7 @@ class CAt():
         """
         self.candidates = np.array([self.r[a] for a in aspects])
     
-    def add_topic(self, label: str, aspects: list[str]) -> None:
+    def add_topic(self, topic: str, aspects: list[str]) -> None:
         """
         Add topic and compute its vector based on its composition (mean vector of multiple words)
 
@@ -48,7 +48,7 @@ class CAt():
         - aspects (list[str]) : List of aspects that compose the topic
         """
 
-        self.topics.append(label)
+        self.topics.append(topic)
         topic_vector = normalize(np.mean([self.r[a] for a in aspects], axis=0).reshape(1, -1))
         if self.topics_matrix is None: self.topics_matrix = topic_vector
         else: self.topics_matrix = np.vstack((self.topics_matrix, topic_vector.squeeze()))
@@ -59,7 +59,7 @@ class CAt():
 
         Parameters:
         -----------
-        - mtr (np.ndarray) : Matrix of tokens as vector
+        - matrix (np.ndarray) : Matrix of tokens as vector
 
         Returns:
         --------
