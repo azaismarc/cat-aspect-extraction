@@ -24,15 +24,15 @@ class TestCat(unittest.TestCase):
 
     def test_init_candidate_aspects(self):
         cat = CAt(self.r)
-        cat.init_candidate_aspects(['cat', 'dog', 'bird'])
+        cat.init_candidate(['cat', 'dog', 'bird'])
 
-        self.assertTrue((cat.aspects_matrix == np.array([
+        self.assertTrue((cat.candidates == np.array([
             [1, 0, 0, 0, 0, 0, 0, 0],
             [0, 1, 0, 0, 0, 0, 0, 0],
             [0, 0, 1, 0, 0, 0, 0, 0]
         ])).all())
 
-    def test_add_label(self):
+    def test_add_topic(self):
         cat = CAt(self.r)
         cat.add_topic('felin', ['cat', 'tiger', 'lion'])
         cat.add_topic('canine', ['dog'])
@@ -44,20 +44,20 @@ class TestCat(unittest.TestCase):
             [0, 1, 0, 0, 0, 0, 0, 0]
         ])).all())
 
-    def test_get_scores(self):
+    def test_compute(self):
         cat = CAt(self.r)
-        cat.init_candidate_aspects(['cat', 'tiger', 'lion'])
+        cat.init_candidate(['cat', 'tiger', 'lion'])
         cat.add_topic('felin', ['cat', 'tiger', 'lion'])
         cat.add_topic('canine', ['dog'])
-        scores = cat.get_scores(['cat', 'dog', 'bird', 'fish', 'mouse', 'elephant', 'tiger', 'lion'])
+        scores = cat.compute(['cat', 'dog', 'bird', 'fish', 'mouse', 'elephant', 'tiger', 'lion'])
         assert scores[0][0] == 'felin'
 
-    def test_get_scores_oov(self):
+    def test_compute_oov(self):
         cat = CAt(self.r)
-        cat.init_candidate_aspects(['cat', 'tiger', 'lion'])
+        cat.init_candidate(['cat', 'tiger', 'lion'])
         cat.add_topic('felin', ['cat', 'tiger', 'lion'])
         cat.add_topic('canine', ['dog'])
-        scores = cat.get_scores(['cat', 'dog', 'bird', 'fish', 'mouse', 'elephant', 'tiger', 'lion', "horse"])
+        scores = cat.compute(['cat', 'dog', 'bird', 'fish', 'mouse', 'elephant', 'tiger', 'lion', "horse"])
         assert scores[0][0] == 'felin'
 
 if __name__ == '__main__':

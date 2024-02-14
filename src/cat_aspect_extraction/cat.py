@@ -15,34 +15,32 @@ class CAt():
     and then using attention to aggregate scores of topics associated with candidate aspects.
     """
 
-    def __init__(self, r: Reach, gamma: float = .03, norm: str = "l2") -> None:
+    def __init__(self, r: Reach, gamma: float = .03) -> None:
         """
         Parameters:
         -----------
-        - r (Reach) : A reach instance for compute word embeddings
+        - r (Reach) : A reach instance for vectorization
         - gamma (float) : Gamma parameter of RBF similarity function (default 0.03)
-        - norm (str) : The norm to use for normalization (default "l2", see scikit-learn)
         """
         self.r = r
         self.gamma = gamma
-        self.norm = norm
-        self.aspects_matrix = None
+        self.candidates = None
         self.topics = []
         self.topics_matrix = None
 
-    def init_candidate_aspects(self, aspects: list[str]) -> None:
+    def init_candidate(self, aspects: list[str]) -> None:
         """
-        Initialize candidate aspects
+        Initialize candidate words for aspect extraction
 
         Parameters:
         -----------
         - aspects (list[str]) : List of aspects as candidates
         """
-        self.aspects_matrix = np.array([self.r[a] for a in aspects])
+        self.candidates = np.array([self.r[a] for a in aspects])
     
     def add_topic(self, label: str, aspects: list[str]) -> None:
         """
-        Add topic and compute its vector based on its composition (mean vector of multiple aspects)
+        Add topic and compute its vector based on its composition (mean vector of multiple words)
 
         Parameters:
         -----------
@@ -51,11 +49,29 @@ class CAt():
         """
 
         self.topics.append(label)
-        topic_vector = normalize(np.mean([self.r[a] for a in aspects], axis=0).reshape(1, -1), norm=self.norm)
+        topic_vector = normalize(np.mean([self.r[a] for a in aspects], axis=0).reshape(1, -1))
         if self.topics_matrix is None: self.topics_matrix = topic_vector
         else: self.topics_matrix = np.vstack((self.topics_matrix, topic_vector.squeeze()))
+
+    def attention(self, matrix: np.array) -> np.ndarray:
+        """
+        Compute attention vector for a given list of tokens as vector
+
+        Parameters:
+        -----------
+        - mtr (np.ndarray) : Matrix of tokens as vector
+
+        Returns:
+        --------
+        - np.ndarray : Attention vector
+        """
+
+        z = np.exp(rbf_kernel(matrix, self.candidates, gamma=self.gamma))
+        s = z.sum()
+        if s == 0: return np.ones((1, matrix.shape[0])) / matrix.shape[0]
+        return (z.sum(axis=1) / s).reshape(1, -1)
     
-    def get_scores(self, tokens: list[str], remove_oov=True) -> list[(str,float)]:
+    def compute(self, tokens: list[str], remove_oov=True) -> list[(str,float)]:
         """
         Compute the score of each topics
 
@@ -70,22 +86,18 @@ class CAt():
           sorted in descending order of score.
         """
 
-        assert self.aspects_matrix is not None, "No candidate aspects have been initialized"
+        assert self.candidates is not None, "No candidate aspects have been initialized"
         assert len(self.topics) > 0, "No labels have been added"
 
         score = Counter({topic: 0 for topic in self.topics})
-        if len(tokens) == 0: return score.most_common()
+        if len(tokens) == 0: return score.most_common() # No tokens to process
         tokens_matrix = self.r.vectorize(tokens, remove_oov=remove_oov)
-        if len(tokens_matrix) == 0: return score.most_common()
+        if len(tokens_matrix) == 0: return score.most_common() # No tokens to process
 
-        rbf_similarity = np.exp(rbf_kernel(tokens_matrix, self.aspects_matrix, gamma=self.gamma))
-        sum_rbf_similarity = rbf_similarity.sum()
-        if sum_rbf_similarity == 0: return score.most_common()
-        att_vector = (rbf_similarity.sum(axis=1) / sum_rbf_similarity).squeeze()
-
-        tokens_att_matrix = att_vector.dot(tokens_matrix).reshape(1, -1)
-        labels_att_matrix = normalize(tokens_att_matrix, norm=self.norm).dot(self.topics_matrix.T)
-        scores = labels_att_matrix.sum(axis=0)
+        att = self.attention(tokens_matrix)
+        z = att.dot(tokens_matrix)
+        x = normalize(z).dot(self.topics_matrix.T)
+        scores = x.sum(axis=0)
 
         for i, topic in enumerate(self.topics):
             score[topic] = scores[i]
