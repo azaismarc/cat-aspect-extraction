@@ -42,7 +42,7 @@ class TestCat(unittest.TestCase):
         print(cat.topics_matrix.round(1))
 
         self.assertTrue((cat.topics_matrix.round(1) == np.array([
-            [.3, 0, 0, 0, 0, 0, .3, .3],
+            [.2, 0, 0, 0, 0, 0, .6, .7],
             [1, 0, 0, 0, 0, 0, 0, 0]
         ])).all())
 

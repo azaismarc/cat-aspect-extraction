@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.metrics.pairwise import rbf_kernel
+from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 from reach import Reach
 from collections import Counter
@@ -15,15 +16,17 @@ class CAt():
     and then using attention to aggregate scores of topics associated with candidate aspects.
     """
 
-    def __init__(self, r: Reach, gamma: float = .03) -> None:
+    def __init__(self, r: Reach, rbf: bool = True, gamma: float = .03,) -> None:
         """
         Parameters:
         -----------
         - r (Reach) : A reach instance for vectorization
+        - rbf (bool) : Whether to use RBF similarity function (True) or cosine similarity (False) (default True)
         - gamma (float) : Gamma parameter of RBF similarity function (default 0.03)
         """
         self.r = r
         self.gamma = gamma
+        self.rbf = rbf
         self.candidates = None
         self.topics = []
         self.topics_matrix = None
@@ -49,7 +52,7 @@ class CAt():
         """
 
         self.topics.append(topic)
-        topic_vector = np.mean([normalize(self.r[a].reshape(1,-1)) for a in aspects], axis=0)
+        topic_vector = normalize(np.mean([self.r[a] for a in aspects], axis=0).reshape(1, -1))
         if self.topics_matrix is None: self.topics_matrix = topic_vector
         else: self.topics_matrix = np.vstack((self.topics_matrix, topic_vector.squeeze()))
 
@@ -66,19 +69,18 @@ class CAt():
         - np.ndarray : Attention vector
         """
 
-        z = rbf_kernel(matrix, self.candidates, gamma=self.gamma)
+        z = rbf_kernel(matrix, self.candidates, gamma=self.gamma) if self.rbf else cosine_similarity(matrix, self.candidates)
         s = z.sum()
         if s == 0: return np.ones((1, matrix.shape[0])) / matrix.shape[0]
         return (z.sum(axis=1) / s).reshape(1, -1)
     
-    def compute(self, tokens: list[str], remove_oov=True) -> list[(str,float)]:
+    def compute(self, tokens: list[str]) -> list[(str,float)]:
         """
         Compute the score of each topics
 
         Parameters:
         -----------
         - tokens (list[str]) : A list of tokens for which to compute scores.
-        - remove_oov (bool) : Indicates whether to remove out-of-vocabulary tokens (default True).
 
         Returns:
         --------
@@ -91,7 +93,7 @@ class CAt():
 
         score = Counter({topic: 0 for topic in self.topics})
         if len(tokens) == 0: return score.most_common() # No tokens to process
-        tokens_matrix = self.r.vectorize(tokens, remove_oov=remove_oov)
+        tokens_matrix = np.array([self.r[t] for t in tokens if t in self.r.items])
         if len(tokens_matrix) == 0: return score.most_common() # No tokens to process
 
         att = self.attention(tokens_matrix)
