@@ -49,7 +49,7 @@ class CAt():
         """
 
         self.topics.append(topic)
-        topic_vector = normalize(np.mean([self.r[a] for a in aspects], axis=0).reshape(1, -1))
+        topic_vector = np.mean([normalize(self.r[a].reshape(1,-1)) for a in aspects], axis=0)
         if self.topics_matrix is None: self.topics_matrix = topic_vector
         else: self.topics_matrix = np.vstack((self.topics_matrix, topic_vector.squeeze()))
 
@@ -66,7 +66,7 @@ class CAt():
         - np.ndarray : Attention vector
         """
 
-        z = np.exp(rbf_kernel(matrix, self.candidates, gamma=self.gamma))
+        z = rbf_kernel(matrix, self.candidates, gamma=self.gamma)
         s = z.sum()
         if s == 0: return np.ones((1, matrix.shape[0])) / matrix.shape[0]
         return (z.sum(axis=1) / s).reshape(1, -1)
