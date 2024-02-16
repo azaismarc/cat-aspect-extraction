@@ -1,9 +1,8 @@
 import numpy as np
-from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 from reach import Reach
 from collections import Counter
+from .attention import Attention
 
 class CAt():
     """
@@ -16,30 +15,33 @@ class CAt():
     and then using attention to aggregate scores of topics associated with candidate aspects.
     """
 
-    def __init__(self, r: Reach, rbf: bool = True, gamma: float = .03,) -> None:
+    def __init__(self, r: Reach) -> None:
         """
         Parameters:
         -----------
         - r (Reach) : A reach instance for vectorization
-        - rbf (bool) : Whether to use RBF similarity function (True) or cosine similarity (False) (default True)
-        - gamma (float) : Gamma parameter of RBF similarity function (default 0.03)
         """
         self.r = r
-        self.gamma = gamma
-        self.rbf = rbf
-        self.candidates = None
+        self.candidates_matrix = None
         self.topics = []
         self.topics_matrix = None
 
-    def init_candidate(self, aspects: list[str]) -> None:
+    def add_candidate(self, aspect: str) -> bool:
         """
         Initialize candidate words for aspect extraction
 
         Parameters:
         -----------
-        - aspects (list[str]) : List of aspects as candidates
+        - aspect (str) : Candidate word to add
+
+        Returns:
+        --------
+        - bool : True if the candidate word has been added, False otherwise
         """
-        self.candidates = np.array([self.r[a] for a in aspects])
+        if aspect not in self.r.items: return False
+        if self.candidates_matrix is None: self.candidates_matrix = self.r[aspect].reshape(1, -1)
+        else: self.candidates_matrix = np.vstack((self.candidates_matrix, self.r[aspect]))
+        return True
     
     def add_topic(self, topic: str, aspects: list[str]) -> None:
         """
@@ -56,25 +58,7 @@ class CAt():
         if self.topics_matrix is None: self.topics_matrix = topic_vector
         else: self.topics_matrix = np.vstack((self.topics_matrix, topic_vector.squeeze()))
 
-    def attention(self, matrix: np.array) -> np.ndarray:
-        """
-        Compute attention vector for a given list of tokens as vector
-
-        Parameters:
-        -----------
-        - matrix (np.ndarray) : Matrix of tokens as vector
-
-        Returns:
-        --------
-        - np.ndarray : Attention vector
-        """
-
-        z = rbf_kernel(matrix, self.candidates, gamma=self.gamma) if self.rbf else cosine_similarity(matrix, self.candidates)
-        s = z.sum()
-        if s == 0: return np.ones((1, matrix.shape[0])) / matrix.shape[0]
-        return (z.sum(axis=1) / s).reshape(1, -1)
-    
-    def compute(self, tokens: list[str]) -> list[(str,float)]:
+    def get_scores(self, tokens: list[str], attention_func: Attention) -> list[(str,float)]:
         """
         Compute the score of each topics
 
@@ -88,15 +72,17 @@ class CAt():
           sorted in descending order of score.
         """
 
-        assert self.candidates is not None, "No candidate aspects have been initialized"
+        assert self.candidates_matrix is not None, "No candidate aspects have been initialized"
         assert len(self.topics) > 0, "No labels have been added"
 
         score = Counter({topic: 0 for topic in self.topics})
+
         if len(tokens) == 0: return score.most_common() # No tokens to process
         tokens_matrix = np.array([self.r[t] for t in tokens if t in self.r.items])
         if len(tokens_matrix) == 0: return score.most_common() # No tokens to process
 
-        att = self.attention(tokens_matrix)
+        att = attention_func.attention(tokens_matrix, self.candidates_matrix)
+
         z = att.dot(tokens_matrix)
         x = normalize(z).dot(self.topics_matrix.T)
         scores = x.sum(axis=0)

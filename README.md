@@ -25,7 +25,7 @@ python -m pip install .
 ## Example
 
 ```python
-from cat-aspect-extraction import CAt
+from cat-aspect-extraction import CAt, RBFAttention # for using the model
 from reach import Reach # for loading word embeddings
 
 # Load in-domain word embeddings and create a CAt instance
@@ -43,7 +43,8 @@ candidates = [
     "experience"
 ]
 
-cat.init_candidate(candidates)
+for aspect in candidates:
+    cat.add_candidate(aspect)
 
 # Add topics
 
@@ -57,7 +58,7 @@ cat.add_topic("ambiance", ["atmosphere", "decor", "interior", "design", "lightin
 
 sentence = "The food was great !".split() # tokenize your sentence
 
-cat.compute(sentence)
+cat.get_scores(sentence, attention=RBFAttention())
 >>> [('food', 0.8), ('service', 0.3), ('ambiance', 0.0)]
 ```
 
