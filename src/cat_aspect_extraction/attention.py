@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 
 from abc import ABC, abstractmethod
 
@@ -8,7 +8,7 @@ class Attention(ABC):
 
     def super_attention(self, z: np.array, n: int) -> np.ndarray:
         s = z.sum()
-        if s == 0: return np.ones((1, len(n))) / len(n)
+        if s == 0: return np.ones((1, n)) / n
         return (z.sum(axis=1) / s).reshape(1, -1)
 
     @abstractmethod
@@ -51,18 +51,16 @@ class CosineAttention(Attention):
 class EuclideanAttention(Attention):
 
     def attention(self, vectors: np.array, candidates: np.array) -> np.ndarray:
-        z = np.linalg.norm(vectors - candidates, axis=1)
-        z = 1 / (1 + z)
+        z = euclidean_distances(vectors, candidates)
         return self.super_attention(z, len(vectors))
     
 class SoftmaxAttention(Attention):
 
     def attention(self, vectors: np.array, candidates: np.array) -> np.ndarray:
-        z = np.exp(candidates.dot(vectors.T))
+        z = np.exp(vectors.dot(candidates.T))
         return self.super_attention(z, len(vectors))
     
 class MeanAttention(Attention):
 
-    def attention(self, vectors: np.array, candidates: np.array) -> np.ndarray:
-        z = np.mean(vectors.dot(candidates.T), axis=1)
-        return self.super_attention(z, len(vectors))
+    def attention(self, vectors: np.array) -> np.ndarray:
+        return self.super_attention(vectors, len(vectors))

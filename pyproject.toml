@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cat-aspect-extraction"
-version = "1.4"
+version = "1.4.0.1"
 authors = [
     {name = "Marc-Alexis Azaïs", email = "azaismarc.pro@gmail.com"}
 ]
