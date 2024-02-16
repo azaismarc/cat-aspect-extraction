@@ -1,5 +1,5 @@
 from .cat import CAt
-from .attention import Attention, RBFAttention, CosineAttention, EuclideanAttention, SoftmaxAttention
+from .attention import Attention, RBFAttention, CosineAttention, EuclideanAttention, SoftmaxAttention, MeanAttention
 
 __all__ = [
     'CAt',
@@ -7,5 +7,6 @@ __all__ = [
     'RBFAttention',
     'CosineAttention',
     'EuclideanAttention',
-    'SoftmaxAttention'
+    'SoftmaxAttention',
+    'MeanAttention'
 ]
