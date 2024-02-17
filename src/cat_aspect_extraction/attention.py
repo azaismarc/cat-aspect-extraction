@@ -23,7 +23,7 @@ class Attention(ABC):
 
         Returns:
         --------
-        - np.ndarray : Attention vector (shape: (1, n))
+        - np.ndarray : Attention vector (shape: (h, n))
         """
         pass
 
@@ -57,10 +57,11 @@ class EuclideanAttention(Attention):
 class SoftmaxAttention(Attention):
 
     def attention(self, vectors: np.array, candidates: np.array) -> np.ndarray:
-        z = np.exp(vectors.dot(candidates.T))
-        return self.super_attention(z, len(vectors))
+        z = candidates.dot(vectors.T)
+        z = np.exp(z - np.max(z, axis=1, keepdims=True))
+        return z / z.sum(axis=1, keepdims=True)
     
 class MeanAttention(Attention):
 
-    def attention(self, vectors: np.array) -> np.ndarray:
-        return self.super_attention(vectors, len(vectors))
+    def attention(self, vectors: np.array, candidates: np.array = None) -> np.ndarray:
+        return (np.ones((1, len(vectors))) / len(vectors)).reshape(1, -1)

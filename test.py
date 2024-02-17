@@ -80,7 +80,7 @@ class TestCat(unittest.TestCase):
         vectors = np.array([self.r['cat'], self.r['tiger'], self.r['lion']])
         attention = SoftmaxAttention()
         scores = attention.attention(vectors, candidates)
-        assert scores.shape == (1, 3)
+        assert scores.shape == (2, 3)
 
     def test_mean_attention(self):
         vectors = np.array([self.r['cat'], self.r['tiger'], self.r['lion']])
