@@ -86,6 +86,10 @@ class CAt():
         z = att.dot(tokens_matrix)
         x = normalize(z).dot(self.topics_matrix.T)
         scores = x.sum(axis=0)
+        
+        # Normalize scores between 0 and 1
+        scores = (scores - scores.min()) / (scores.max() - scores.min())
+
 
         for i, topic in enumerate(self.topics):
             score[topic] = scores[i]

@@ -23,7 +23,7 @@ class TestCat(unittest.TestCase):
         self.r = Reach(mtr, words)
         
 
-    def test_init_candidate(self):
+    def test_add_candidate(self):
         cat = CAt(self.r)
         cat.add_candidate('cat')
         cat.add_candidate('dog')

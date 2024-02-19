@@ -59,7 +59,7 @@ cat.add_topic("ambiance", ["atmosphere", "decor", "interior", "design", "lightin
 sentence = "The food was great !".split() # tokenize your sentence
 
 cat.get_scores(sentence, attention=RBFAttention())
->>> [('food', 0.8), ('service', 0.3), ('ambiance', 0.0)]
+>>> [('food', 1), ('service', 0.5), ('ambiance', 0.0)]
 ```
 
 ## Citations
