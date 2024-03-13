@@ -47,13 +47,14 @@ class CosineAttention(Attention):
         z = cosine_similarity(vectors, candidates)
         z = (1 - z) / 2 # Convert cosine similarity to distance
         z = z.clip(0, 1) # Clip values to be between 0 and 1
+        z = 1 - z # Convert distance to similarity
         return self.super_attention(z, len(vectors))
     
 class EuclideanAttention(Attention):
 
     def attention(self, vectors: np.array, candidates: np.array) -> np.ndarray:
         z = euclidean_distances(vectors, candidates)
-        z = z / z.max() # normalize z to be between 0 and 1
+        z = 1 - z / z.max() # convert distance to similarity
         return self.super_attention(z, len(vectors))
     
 class SoftmaxAttention(Attention):
