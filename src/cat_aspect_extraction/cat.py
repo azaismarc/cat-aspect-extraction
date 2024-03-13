@@ -16,13 +16,15 @@ class CAt():
     and then using attention to aggregate scores of topics associated with candidate aspects.
     """
 
-    def __init__(self, r: Reach) -> None:
+    def __init__(self, r_attention: Reach, r_scores: Reach) -> None:
         """
         Parameters:
         -----------
-        - r (Reach) : A reach instance for vectorization
+        - r_attention (Reach) : Word embeddings for computed attention (CBOW is advised)
+        - r_scores (Reach) : Word embeddings for computed scores (Skip-gram is advised)
         """
-        self.r = r
+        self.r_attention = r_attention
+        self.r_scores = r_scores
         self.candidates_matrix = None
         self.topics = []
         self.topics_matrix = None
@@ -40,9 +42,9 @@ class CAt():
         --------
         - bool : True if the candidate word has been added, False otherwise
         """
-        if aspect not in self.r.items: return False
-        if self.candidates_matrix is None: self.candidates_matrix = self.r[aspect].reshape(1, -1)
-        else: self.candidates_matrix = np.vstack((self.candidates_matrix, self.r[aspect]))
+        if aspect not in self.r_attention.items: return False
+        if self.candidates_matrix is None: self.candidates_matrix = self.r_attention[aspect].reshape(1, -1)
+        else: self.candidates_matrix = np.vstack((self.candidates_matrix, self.r_attention[aspect]))
         return True
     
     def add_topic(self, topic: str, aspects: list[str]) -> None:
@@ -56,7 +58,7 @@ class CAt():
         """
 
         self.topics.append(topic)
-        topic_vector = normalize(np.mean([self.r[a] for a in aspects], axis=0).reshape(1, -1))
+        topic_vector = normalize(np.mean([self.r_scores[a] for a in aspects], axis=0).reshape(1, -1))
         if self.topics_matrix is None: self.topics_matrix = topic_vector
         else: self.topics_matrix = np.vstack((self.topics_matrix, topic_vector.squeeze()))
 
@@ -80,12 +82,13 @@ class CAt():
         score = Counter({topic: 0 for topic in self.topics})
 
         if len(tokens) == 0: return score.most_common() # No tokens to process
-        tokens_matrix = np.array([self.r[t] for t in tokens if t in self.r.items])
-        if len(tokens_matrix) == 0: return score.most_common() # No tokens to process
+        tokens_matrix_cbow = np.array([self.r_attention[t] for t in tokens if t in self.r_attention.items])
+        tokens_matrix_sg = np.array([self.r_scores[t] for t in tokens if t in self.r_scores.items])
+        if len(tokens_matrix_cbow) == 0 or len(tokens_matrix_sg) == 0: return score.most_common() # No tokens to process
 
-        att = attention_func.attention(tokens_matrix, self.candidates_matrix)
+        att = attention_func.attention(tokens_matrix_cbow, self.candidates_matrix)
 
-        z = att.dot(tokens_matrix)
+        z = att.dot(tokens_matrix_sg)
         x = normalize(z).dot(self.topics_matrix.T)
         scores = x.sum(axis=0)
         

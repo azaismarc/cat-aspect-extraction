@@ -24,7 +24,7 @@ class TestCat(unittest.TestCase):
         
 
     def test_add_candidate(self):
-        cat = CAt(self.r)
+        cat = CAt(self.r, self.r)
         cat.add_candidate('cat')
         cat.add_candidate('dog')
         cat.add_candidate('bird')
@@ -36,7 +36,7 @@ class TestCat(unittest.TestCase):
         ])).all())
 
     def test_add_topic(self):
-        cat = CAt(self.r)
+        cat = CAt(self.r, self.r)
         cat.add_topic('felin', ['cat', 'tiger', 'lion'])
         cat.add_topic('canine', ['dog'])
 
@@ -46,7 +46,7 @@ class TestCat(unittest.TestCase):
         ])).all())
 
     def test_get_scores(self):
-        cat = CAt(self.r)
+        cat = CAt(self.r, self.r)
         cat.add_candidate('tiger')
         cat.add_topic('felin', ['cat', 'tiger', 'lion'])
         cat.add_topic('canine', ['dog'])
