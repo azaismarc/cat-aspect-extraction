@@ -3,6 +3,7 @@ from sklearn.preprocessing import normalize
 from reach import Reach
 from collections import Counter
 from .attention import Attention
+from sklearn.preprocessing import MinMaxScaler
 
 class CAt():
     """
@@ -25,6 +26,7 @@ class CAt():
         self.candidates_matrix = None
         self.topics = []
         self.topics_matrix = None
+        self.scaler = MinMaxScaler()
 
     def add_candidate(self, aspect: str) -> bool:
         """
@@ -88,8 +90,7 @@ class CAt():
         scores = x.sum(axis=0)
         
         # Normalize scores between 0 and 1
-        scores = (scores - scores.min()) / (scores.max() - scores.min())
-
+        scores = self.scaler.fit_transform(scores.reshape(-1, 1)).squeeze()
 
         for i, topic in enumerate(self.topics):
             score[topic] = scores[i]
