@@ -5,8 +5,7 @@ __all__ = [
     'CAt',
     'Attention',
     'RBFAttention',
-    'CosineAttention',
-    'EuclideanAttention',
     'SoftmaxAttention',
-    'MeanAttention'
+    'MeanAttention',
+    'CosineVarianceAttention'
 ]
