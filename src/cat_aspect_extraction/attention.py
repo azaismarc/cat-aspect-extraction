@@ -39,6 +39,15 @@ class RBFAttention(Attention):
     def attention(self, vectors: np.array, candidates: np.array) -> np.ndarray:
         z = rbf_kernel(vectors, candidates, gamma=self.gamma)
         return self.super_attention(z, len(vectors))
+
+class CosineVarianceAttention(Attention):
+
+    def attention(self, vectors: np.array, candidates: np.array) -> np.ndarray:
+        z = cosine_similarity(vectors, candidates)
+        var_z = np.var(z, axis=1) # Compute variance of cosine similarity
+        s = var_z.sum()
+        if s == 0: return np.ones((1, len(vectors))) / len(vectors)
+        return (var_z / var_z.sum()).reshape(1, -1)
     
 
 class CosineAttention(Attention):

@@ -1,6 +1,6 @@
 from reach import Reach
 from src.cat_aspect_extraction import CAt
-from src.cat_aspect_extraction.attention import RBFAttention, CosineAttention, EuclideanAttention, SoftmaxAttention, MeanAttention
+from src.cat_aspect_extraction.attention import RBFAttention, CosineAttention, CosineVarianceAttention, EuclideanAttention, SoftmaxAttention, MeanAttention
 import numpy as np
 import unittest
 
@@ -65,6 +65,13 @@ class TestCat(unittest.TestCase):
         candidates = [self.r['cat'], self.r['dog']]
         vectors = [self.r['cat'], self.r['tiger'], self.r['lion']]
         attention = CosineAttention()
+        scores = attention.attention(vectors, candidates)
+        assert scores.shape == (1, 3)
+
+    def test_cosine_variance_attention(self):
+        candidates = [self.r['cat'], self.r['dog']]
+        vectors = [self.r['cat'], self.r['tiger'], self.r['lion']]
+        attention = CosineVarianceAttention()
         scores = attention.attention(vectors, candidates)
         assert scores.shape == (1, 3)
 
