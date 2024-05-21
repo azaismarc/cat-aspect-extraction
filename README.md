@@ -25,7 +25,7 @@ python -m pip install .
 ## Example
 
 ```python
-from cat-aspect-extraction import CAt, RBFAttention # for using the model
+from cat_aspect_extraction import CAt, RBFAttention # for using the model
 from reach import Reach # for loading word embeddings
 
 # Load in-domain word embeddings and create a CAt instance
